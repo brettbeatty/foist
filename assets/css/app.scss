@@ -4,3 +4,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+// temporary fix to hide live reload iframe
+body > iframe {
+  display: none;
+}
+
+// temporary fix to hide phx-connected
+.phx-connected, .phx-disconnected {
+  height: 100%;
+}
