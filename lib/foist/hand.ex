@@ -1,4 +1,4 @@
-defmodule Foist.Games.Hand do
+defmodule Foist.Hand do
   @moduledoc """
   A hand holds a player's cards and tokens.
   """
@@ -25,7 +25,7 @@ defmodule Foist.Games.Hand do
   end
 
   @doc """
-  Create a hand.
+  Create a hand with `tokens`.
   """
   @spec new(7 | 9 | 11) :: t()
   def new(tokens) do

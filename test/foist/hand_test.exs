@@ -1,7 +1,6 @@
-defmodule Foist.Games.HandTest do
+defmodule Foist.HandTest do
   use ExUnit.Case, async: true
-  alias Foist.Fixtures
-  alias Foist.Games.Hand
+  alias Foist.{Fixtures, Hand}
 
   describe "add_card/2" do
     test "adds card to hand" do

@@ -1,5 +1,5 @@
 defmodule Foist.Fixtures do
-  alias Foist.Games.Hand
+  alias Foist.Hand
 
   @spec hand(cards: [Hand.card()], tokens: non_neg_integer()) :: Hand.t()
   def hand(opts \\ []) do
