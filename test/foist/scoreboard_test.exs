@@ -2,13 +2,13 @@ defmodule Foist.ScoreboardTest do
   use ExUnit.Case, async: true
   alias Foist.{Fixtures, Scoreboard}
 
-  describe "leave_roster/2" do
+  describe "leave/2" do
     test "removes player from roster" do
       scoreboard = Fixtures.scoreboard(4)
       player = Fixtures.player(?A)
       assert player in scoreboard.roster.players
 
-      assert {:ok, scoreboard} = Scoreboard.leave_roster(scoreboard, player)
+      assert {:ok, scoreboard} = Scoreboard.leave(scoreboard, player)
       refute player in scoreboard.roster.players
     end
 
@@ -17,7 +17,7 @@ defmodule Foist.ScoreboardTest do
       player = Fixtures.player(?D)
       refute player in scoreboard.roster.players
 
-      assert {:ok, ^scoreboard} = Scoreboard.leave_roster(scoreboard, player)
+      assert {:ok, ^scoreboard} = Scoreboard.leave(scoreboard, player)
     end
 
     test "fails if last player on roster" do
@@ -25,7 +25,7 @@ defmodule Foist.ScoreboardTest do
       player = Fixtures.player(?A)
       assert scoreboard.roster.players == [player]
 
-      assert Scoreboard.leave_roster(scoreboard, player) == :empty
+      assert Scoreboard.leave(scoreboard, player) == :empty
     end
 
     test "finishes if all remaining players have opted to play again" do
@@ -37,7 +37,7 @@ defmodule Foist.ScoreboardTest do
       assert player_b in scoreboard.play_again
       assert player_c in scoreboard.play_again
 
-      assert {:done, roster} = Scoreboard.leave_roster(scoreboard, player_a)
+      assert {:done, roster} = Scoreboard.leave(scoreboard, player_a)
       assert roster.players == [player_b, player_c]
     end
   end

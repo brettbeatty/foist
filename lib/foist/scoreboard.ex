@@ -17,8 +17,8 @@ defmodule Foist.Scoreboard do
 
   Fails if last player to leave; mostly a signal to shut down roster.
   """
-  @spec leave_roster(t(), Player.t()) :: {:ok, t()} | {:done, Roster.t()} | :empty
-  def leave_roster(scoreboard = %__MODULE__{roster: roster}, player) do
+  @spec leave(t(), Player.t()) :: {:ok, t()} | {:done, Roster.t()} | :empty
+  def leave(scoreboard = %__MODULE__{roster: roster}, player) do
     with {:ok, roster} <- Roster.remove_player(roster, player) do
       maybe_finish(%{scoreboard | roster: roster})
     end

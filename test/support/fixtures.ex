@@ -1,5 +1,5 @@
 defmodule Foist.Fixtures do
-  alias Foist.{Game, Hand, Player, Roster, Scoreboard}
+  alias Foist.{Game, Hand, Lobby, Player, Roster, Scoreboard}
 
   @spec game(turn: 0..6) :: Game.t()
   def game(opts \\ []) do
@@ -47,6 +47,11 @@ defmodule Foist.Fixtures do
     struct!(%Hand{cards: [23, 24, 25, 27], tokens: 8}, opts)
   end
 
+  @spec lobby(0..7) :: Lobby.t()
+  def lobby(size) do
+    %Lobby{roster: roster(size)}
+  end
+
   @spec player(?A..?Z) :: Player.t()
   def player(char) do
     %Player{id: <<"0000000", char>>, name: <<"Player ", char>>}
@@ -63,7 +68,7 @@ defmodule Foist.Fixtures do
   end
 
   @spec scoreboard(1..7) :: Scoreboard.t()
-  def scoreboard(size \\ 3) do
+  def scoreboard(size) do
     %Scoreboard{
       play_again: MapSet.new([player(?B), player(?C)]),
       roster: roster(size),
