@@ -7,6 +7,10 @@ defmodule Foist.Application do
 
   def start(_type, _args) do
     children = [
+      # Registers game servers by their join codes
+      {Registry, keys: :unique, name: Foist.GameRegistry},
+      # Supervises game servers (even though they're temporary)
+      {DynamicSupervisor, strategy: :one_for_one, name: Foist.GameSupervisor},
       # Start the Telemetry supervisor
       FoistWeb.Telemetry,
       # Start the PubSub system
