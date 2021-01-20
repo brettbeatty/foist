@@ -4,7 +4,7 @@ defmodule Foist.GameServer do
   """
   use GenServer
   alias Foist.{Game, GameRegistry, Lobby, Roster, Scoreboard}
-  alias Foist.Events.{GameUpdated, LobbyUpdated, TokensDivvied}
+  alias Foist.Events.{GameUpdated, LobbyUpdated, ScoreboardUpdated, TokensDivvied}
 
   @type join_code() :: Roster.join_code()
   @type state() :: Game.t() | Lobby.t() | Scoreboard.t()
@@ -70,11 +70,14 @@ defmodule Foist.GameServer do
   end
 
   def handle_call({:leave, player}, _from, scoreboard = %Scoreboard{}) do
+    %Scoreboard{roster: %Roster{join_code: join_code}} = scoreboard
+
     case Scoreboard.leave(scoreboard, player) do
       {:ok, scoreboard} ->
+        broadcast!(join_code, ScoreboardUpdated.new(scoreboard))
         {:reply, :ok, scoreboard}
 
-      {:done, roster = %Roster{join_code: join_code}} ->
+      {:done, roster} ->
         lobby = Lobby.new(roster)
         broadcast!(join_code, LobbyUpdated.new(lobby))
         {:reply, :ok, lobby}
@@ -107,11 +110,14 @@ defmodule Foist.GameServer do
   end
 
   def handle_call({:play_again, player}, _from, scoreboard = %Scoreboard{}) do
+    %Scoreboard{roster: %Roster{join_code: join_code}} = scoreboard
+
     case Scoreboard.play_again(scoreboard, player) do
       {:ok, scoreboard} ->
+        broadcast!(join_code, ScoreboardUpdated.new(scoreboard))
         {:reply, :ok, scoreboard}
 
-      {:done, roster = %Roster{join_code: join_code}} ->
+      {:done, roster} ->
         lobby = Lobby.new(roster)
         broadcast!(join_code, LobbyUpdated.new(lobby))
         {:reply, :ok, lobby}
@@ -142,14 +148,18 @@ defmodule Foist.GameServer do
     {:reply, :already_started, state}
   end
 
-  def handle_call({:take_card, player}, _from, game = %Game{}) do
+  def handle_call({:take_card, player}, _from, game = %Game{roster: roster}) do
+    %Roster{join_code: join_code} = roster
+
     case Game.take_card(game, player) do
-      {:ok, game = %Game{roster: %Roster{join_code: join_code}}} ->
+      {:ok, game} ->
         broadcast!(join_code, GameUpdated.new(game))
         {:reply, {:ok, game.hands[player].tokens}, game}
 
       {:done, hands} ->
-        {:reply, {:ok, hands[player].tokens}, Scoreboard.new(game.roster, hands)}
+        scoreboard = Scoreboard.new(roster, hands)
+        broadcast!(join_code, ScoreboardUpdated.new(scoreboard))
+        {:reply, {:ok, hands[player].tokens}, scoreboard}
 
       :not_turn ->
         {:reply, :not_turn, game}

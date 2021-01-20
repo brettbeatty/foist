@@ -1,7 +1,7 @@
 defmodule Foist.GameServerTest do
   use ExUnit.Case, async: true
   alias Foist.{Fixtures, Game, GameRegistry, GameServer, Lobby, Scoreboard}
-  alias Foist.Events.{GameUpdated, LobbyUpdated, TokensDivvied}
+  alias Foist.Events.{GameUpdated, LobbyUpdated, ScoreboardUpdated, TokensDivvied}
 
   @spec get_state(GameServer.join_code()) :: GameServer.state()
   defp get_state(join_code) do
@@ -186,6 +186,27 @@ defmodule Foist.GameServerTest do
       refute player in players
     end
 
+    test "broadcasts scoreboard update" do
+      join_code = start_server!(Fixtures.scoreboard(4))
+      player = Fixtures.player(?A)
+
+      # so the test process isn't unsubscribed from the topic
+      spawn(GameServer, :leave, [join_code, player])
+
+      expected_scores = [
+        %{name: "Player F", play_again: :no, score: -1},
+        %{name: "Player B", play_again: :yes, score: 6},
+        %{name: "Player D", play_again: :maybe, score: 26},
+        %{name: "Player A", play_again: :no, score: 27},
+        %{name: "Player G", play_again: :no, score: 33},
+        %{name: "Player E", play_again: :no, score: 35},
+        %{name: "Player C", play_again: :yes, score: 74}
+      ]
+
+      assert_receive %ScoreboardUpdated{scores: scores}
+      assert scores == expected_scores
+    end
+
     test "fails if game already started" do
       join_code = start_server!(Fixtures.game())
       player = Fixtures.player(?A)
@@ -268,11 +289,30 @@ defmodule Foist.GameServerTest do
       join_code = start_server!(Fixtures.scoreboard(3))
       player = Fixtures.player(?A)
 
-      # so the test process isn't unsubscribed from the topic
-      spawn(GameServer, :play_again, [join_code, player])
+      assert GameServer.play_again(join_code, player) == :ok
 
       assert_receive %LobbyUpdated{players: players}
       assert player in players
+    end
+
+    test "broadcasts scoreboard update" do
+      join_code = start_server!(Fixtures.scoreboard(4))
+      player = Fixtures.player(?A)
+
+      assert GameServer.play_again(join_code, player) == :ok
+
+      expected_scores = [
+        %{name: "Player F", play_again: :no, score: -1},
+        %{name: "Player B", play_again: :yes, score: 6},
+        %{name: "Player D", play_again: :maybe, score: 26},
+        %{name: "Player A", play_again: :yes, score: 27},
+        %{name: "Player G", play_again: :no, score: 33},
+        %{name: "Player E", play_again: :no, score: 35},
+        %{name: "Player C", play_again: :yes, score: 74}
+      ]
+
+      assert_receive %ScoreboardUpdated{scores: scores}
+      assert scores == expected_scores
     end
 
     test "fails if not on scoreboard" do
@@ -375,6 +415,25 @@ defmodule Foist.GameServerTest do
 
       assert {:ok, _tokens} = GameServer.take_card(join_code, player)
       assert %Scoreboard{} = get_state(join_code)
+    end
+
+    test "broadcasts a ScoreboardUpdated event if game finishes" do
+      join_code = start_server!(Fixtures.game(deck: []))
+      player = Fixtures.player(?A)
+
+      expected_scores = [
+        %{name: "Player F", play_again: :maybe, score: -4},
+        %{name: "Player B", play_again: :maybe, score: 5},
+        %{name: "Player D", play_again: :maybe, score: 11},
+        %{name: "Player E", play_again: :maybe, score: 20},
+        %{name: "Player A", play_again: :maybe, score: 28},
+        %{name: "Player G", play_again: :maybe, score: 34},
+        %{name: "Player C", play_again: :maybe, score: 74}
+      ]
+
+      assert {:ok, _tokens} = GameServer.take_card(join_code, player)
+      assert_received %ScoreboardUpdated{scores: scores}
+      assert scores == expected_scores
     end
 
     test "fails if not player's turn" do
