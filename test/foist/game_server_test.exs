@@ -1,6 +1,7 @@
 defmodule Foist.GameServerTest do
   use ExUnit.Case, async: true
   alias Foist.{Fixtures, Game, GameRegistry, GameServer, Lobby, Scoreboard}
+  alias Foist.Events.LobbyUpdated
 
   @spec get_state(GameServer.join_code()) :: GameServer.state()
   defp get_state(join_code) do
@@ -11,12 +12,15 @@ defmodule Foist.GameServerTest do
   defp start_server! do
     pid = start_supervised!(GameServer)
     {:ok, join_code} = GameServer.fetch_join_code(pid)
+    :ok = Phoenix.PubSub.subscribe(Foist.PubSub, join_code)
 
     join_code
   end
 
   defp start_server!(state) do
     join_code = start_server!()
+
+    state = Map.update!(state, :roster, &Map.put(&1, :join_code, join_code))
 
     :sys.replace_state({:via, Registry, {GameRegistry, join_code}}, fn _state -> state end)
 
@@ -60,6 +64,32 @@ defmodule Foist.GameServerTest do
       assert player in get_state(join_code).roster.players
 
       assert GameServer.join(join_code, player) == :ok
+    end
+
+    test "subscribes to join_code topic" do
+      join_code = start_server!(Fixtures.lobby(7))
+      player = Fixtures.player(?A)
+      Phoenix.PubSub.unsubscribe(Foist.PubSub, join_code)
+
+      ref = make_ref()
+      Phoenix.PubSub.broadcast!(Foist.PubSub, join_code, ref)
+      refute_receive ^ref
+
+      assert GameServer.join(join_code, player) == :ok
+
+      ref = make_ref()
+      Phoenix.PubSub.broadcast!(Foist.PubSub, join_code, ref)
+      assert_receive ^ref
+    end
+
+    test "broadcasts lobby update" do
+      join_code = start_server!(Fixtures.lobby(2))
+      player = Fixtures.player(?C)
+
+      assert GameServer.join(join_code, player) == :ok
+
+      assert_receive %LobbyUpdated{players: players}
+      assert player in players
     end
 
     test "fails if lobby full" do
@@ -110,14 +140,6 @@ defmodule Foist.GameServerTest do
       refute player in get_state(join_code).roster.players
     end
 
-    test "does not fail if player already left" do
-      join_code = start_server!(Fixtures.lobby(3))
-      player = Fixtures.player(?D)
-      refute player in get_state(join_code).roster.players
-
-      assert GameServer.leave(join_code, player) == :ok
-    end
-
     test "advances to lobby (from scoreboard) if remaining players staying" do
       join_code = start_server!(Fixtures.scoreboard(3))
       player = Fixtures.player(?A)
@@ -125,6 +147,43 @@ defmodule Foist.GameServerTest do
 
       assert GameServer.leave(join_code, player) == :ok
       assert %Lobby{} = get_state(join_code)
+    end
+
+    test "unsubscribes from join_code topic" do
+      join_code = start_server!(Fixtures.lobby(7))
+      player = Fixtures.player(?A)
+
+      ref = make_ref()
+      Phoenix.PubSub.broadcast!(Foist.PubSub, join_code, ref)
+      assert_receive ^ref
+
+      assert GameServer.leave(join_code, player) == :ok
+
+      ref = make_ref()
+      Phoenix.PubSub.broadcast!(Foist.PubSub, join_code, ref)
+      refute_receive ^ref
+    end
+
+    test "broadcasts lobby update" do
+      join_code = start_server!(Fixtures.lobby(2))
+      player = Fixtures.player(?A)
+
+      # so the test process isn't unsubscribed from the topic
+      spawn(GameServer, :leave, [join_code, player])
+
+      assert_receive %LobbyUpdated{players: players}
+      refute player in players
+    end
+
+    test "broadcasts lobby update (coming from scoreboard)" do
+      join_code = start_server!(Fixtures.scoreboard(3))
+      player = Fixtures.player(?A)
+
+      # so the test process isn't unsubscribed from the topic
+      spawn(GameServer, :leave, [join_code, player])
+
+      assert_receive %LobbyUpdated{players: players}
+      refute player in players
     end
 
     test "fails if game already started" do
@@ -195,6 +254,17 @@ defmodule Foist.GameServerTest do
 
       assert GameServer.play_again(join_code, player)
       assert %Lobby{} = get_state(join_code)
+    end
+
+    test "broadcasts lobby update (coming from scoreboard)" do
+      join_code = start_server!(Fixtures.scoreboard(3))
+      player = Fixtures.player(?A)
+
+      # so the test process isn't unsubscribed from the topic
+      spawn(GameServer, :play_again, [join_code, player])
+
+      assert_receive %LobbyUpdated{players: players}
+      assert player in players
     end
 
     test "fails if not on scoreboard" do

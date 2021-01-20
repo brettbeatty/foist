@@ -4,9 +4,15 @@ defmodule Foist.GameServer do
   """
   use GenServer
   alias Foist.{Game, GameRegistry, Lobby, Roster, Scoreboard}
+  alias Foist.Events.LobbyUpdated
 
   @type join_code() :: Roster.join_code()
   @type state() :: Game.t() | Lobby.t() | Scoreboard.t()
+
+  @spec broadcast!(join_code(), any()) :: :ok
+  defp broadcast!(join_code, message) do
+    Phoenix.PubSub.broadcast!(Foist.PubSub, join_code, message)
+  end
 
   @doc """
   Create a child spec for a game server to be started under a supervisor.
@@ -39,7 +45,8 @@ defmodule Foist.GameServer do
 
   def handle_call({:join, player}, _from, lobby = %Lobby{}) do
     case Lobby.join(lobby, player) do
-      {:ok, lobby} ->
+      {:ok, lobby = %Lobby{roster: %Roster{join_code: join_code}}} ->
+        broadcast!(join_code, LobbyUpdated.new(lobby))
         {:reply, :ok, lobby}
 
       :full ->
@@ -53,7 +60,8 @@ defmodule Foist.GameServer do
 
   def handle_call({:leave, player}, _from, lobby = %Lobby{}) do
     case Lobby.leave(lobby, player) do
-      {:ok, lobby} ->
+      {:ok, lobby = %Lobby{roster: %Roster{join_code: join_code}}} ->
+        broadcast!(join_code, LobbyUpdated.new(lobby))
         {:reply, :ok, lobby}
 
       :empty ->
@@ -66,8 +74,10 @@ defmodule Foist.GameServer do
       {:ok, scoreboard} ->
         {:reply, :ok, scoreboard}
 
-      {:done, roster} ->
-        {:reply, :ok, Lobby.new(roster)}
+      {:done, roster = %Roster{join_code: join_code}} ->
+        lobby = Lobby.new(roster)
+        broadcast!(join_code, LobbyUpdated.new(lobby))
+        {:reply, :ok, lobby}
 
       :empty ->
         {:stop, :normal, :ok, scoreboard}
@@ -100,8 +110,10 @@ defmodule Foist.GameServer do
       {:ok, scoreboard} ->
         {:reply, :ok, scoreboard}
 
-      {:done, roster} ->
-        {:reply, :ok, Lobby.new(roster)}
+      {:done, roster = %Roster{join_code: join_code}} ->
+        lobby = Lobby.new(roster)
+        broadcast!(join_code, LobbyUpdated.new(lobby))
+        {:reply, :ok, lobby}
     end
   end
 
@@ -161,9 +173,17 @@ defmodule Foist.GameServer do
   """
   @spec join(join_code(), Player.t()) :: :ok | :already_started | :full | :not_found
   def join(join_code, player) do
+    with :ok <- check_for_game(join_code),
+         :ok <- GenServer.call(via(join_code), {:join, player}) do
+      :ok = Phoenix.PubSub.subscribe(Foist.PubSub, join_code)
+    end
+  end
+
+  @spec check_for_game(join_code()) :: :ok | :not_found
+  defp check_for_game(join_code) do
     case Registry.lookup(GameRegistry, join_code) do
       [{_pid, nil}] ->
-        GenServer.call(via(join_code), {:join, player})
+        :ok
 
       [] ->
         :not_found
@@ -175,7 +195,9 @@ defmodule Foist.GameServer do
   """
   @spec leave(join_code(), Player.t()) :: :ok | :already_started
   def leave(join_code, player) do
-    GenServer.call(via(join_code), {:leave, player})
+    with :ok <- GenServer.call(via(join_code), {:leave, player}) do
+      :ok = Phoenix.PubSub.unsubscribe(Foist.PubSub, join_code)
+    end
   end
 
   @doc """
