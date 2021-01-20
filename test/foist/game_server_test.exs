@@ -1,7 +1,7 @@
 defmodule Foist.GameServerTest do
   use ExUnit.Case, async: true
   alias Foist.{Fixtures, Game, GameRegistry, GameServer, Lobby, Scoreboard}
-  alias Foist.Events.LobbyUpdated
+  alias Foist.Events.{LobbyUpdated, TokensDivvied}
 
   @spec get_state(GameServer.join_code()) :: GameServer.state()
   defp get_state(join_code) do
@@ -283,6 +283,14 @@ defmodule Foist.GameServerTest do
 
       assert GameServer.start_game(join_code, player) == :ok
       assert %Game{} = get_state(join_code)
+    end
+
+    test "broadcasts a TokensDivvied event" do
+      join_code = start_server!(Fixtures.lobby(3))
+      player = Fixtures.player(?A)
+
+      assert GameServer.start_game(join_code, player) == :ok
+      assert_receive %TokensDivvied{tokens: 11}
     end
 
     test "fails if game already started" do
