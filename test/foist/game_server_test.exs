@@ -1,7 +1,7 @@
 defmodule Foist.GameServerTest do
   use ExUnit.Case, async: true
   alias Foist.{Fixtures, Game, GameRegistry, GameServer, Lobby, Scoreboard}
-  alias Foist.Events.{LobbyUpdated, TokensDivvied}
+  alias Foist.Events.{GameUpdated, LobbyUpdated, TokensDivvied}
 
   @spec get_state(GameServer.join_code()) :: GameServer.state()
   defp get_state(join_code) do
@@ -222,6 +222,14 @@ defmodule Foist.GameServerTest do
       assert GameServer.place_token(join_code, player) == {:ok, 0}
     end
 
+    test "broadcasts a GameUpdated event" do
+      join_code = start_server!(Fixtures.game())
+      player = Fixtures.player(?A)
+
+      assert {:ok, _tokens} = GameServer.place_token(join_code, player)
+      assert_receive %GameUpdated{tokens: 3}
+    end
+
     test "fails if not player's turn" do
       join_code = start_server!(Fixtures.game())
       player = Fixtures.player(?B)
@@ -285,6 +293,14 @@ defmodule Foist.GameServerTest do
       assert %Game{} = get_state(join_code)
     end
 
+    test "broadcasts a GameUpdated event" do
+      join_code = start_server!(Fixtures.lobby(3))
+      player = Fixtures.player(?A)
+
+      assert GameServer.start_game(join_code, player) == :ok
+      assert_receive %GameUpdated{}
+    end
+
     test "broadcasts a TokensDivvied event" do
       join_code = start_server!(Fixtures.lobby(3))
       player = Fixtures.player(?A)
@@ -329,6 +345,28 @@ defmodule Foist.GameServerTest do
       player = Fixtures.player(?A)
 
       assert GameServer.take_card(join_code, player) == {:ok, 3}
+    end
+
+    test "broadcasts a GameUpdated event" do
+      join_code = start_server!(Fixtures.game())
+      player = Fixtures.player(?A)
+
+      expected_hands = [
+        %{cards: [lone: 21], name: "Player E", turn?: false},
+        %{cards: [lone: 34], name: "Player G", turn?: false},
+        %{cards: [low: 32, high: 33], name: "Player F", turn?: false},
+        %{cards: [low: 4, high: 5, lone: 27], name: "Player A", turn?: false},
+        %{cards: [lone: 23, low: 25, high: 26, lone: 29], name: "Player C", turn?: true},
+        %{cards: [low: 6, mid: 7, mid: 8, mid: 9, high: 10], name: "Player B", turn?: false},
+        %{cards: [lone: 16], name: "Player D", turn?: false}
+      ]
+
+      assert {:ok, _tokens} = GameServer.take_card(join_code, player)
+      assert_receive event = %GameUpdated{}
+      assert event.card == 30
+      assert event.deck_size == 6
+      assert event.hands == expected_hands
+      assert event.turn == Fixtures.player(?C)
     end
 
     test "advances to scoreboard if game finishes" do

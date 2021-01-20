@@ -4,7 +4,7 @@ defmodule Foist.GameServer do
   """
   use GenServer
   alias Foist.{Game, GameRegistry, Lobby, Roster, Scoreboard}
-  alias Foist.Events.{LobbyUpdated, TokensDivvied}
+  alias Foist.Events.{GameUpdated, LobbyUpdated, TokensDivvied}
 
   @type join_code() :: Roster.join_code()
   @type state() :: Game.t() | Lobby.t() | Scoreboard.t()
@@ -90,7 +90,8 @@ defmodule Foist.GameServer do
 
   def handle_call({:place_token, player}, _from, game = %Game{}) do
     case Game.place_token(game, player) do
-      {:ok, game} ->
+      {:ok, game = %Game{roster: %Roster{join_code: join_code}}} ->
+        broadcast!(join_code, GameUpdated.new(game))
         {:reply, {:ok, game.hands[player].tokens}, game}
 
       :not_turn ->
@@ -125,6 +126,7 @@ defmodule Foist.GameServer do
     case Lobby.start_game(lobby, player) do
       {:ok, roster = %Roster{join_code: join_code}} ->
         game = Game.new(roster)
+        broadcast!(join_code, GameUpdated.new(game))
         broadcast!(join_code, TokensDivvied.new(game))
         {:reply, :ok, game}
 
@@ -142,7 +144,8 @@ defmodule Foist.GameServer do
 
   def handle_call({:take_card, player}, _from, game = %Game{}) do
     case Game.take_card(game, player) do
-      {:ok, game} ->
+      {:ok, game = %Game{roster: %Roster{join_code: join_code}}} ->
+        broadcast!(join_code, GameUpdated.new(game))
         {:reply, {:ok, game.hands[player].tokens}, game}
 
       {:done, hands} ->
