@@ -18,6 +18,7 @@ defmodule FoistWeb.Router do
     pipe_through :browser
 
     get "/", WelcomeController, :index
+    get "/games", GameController, :index
     live "/page", PageLive, :index
   end
 
