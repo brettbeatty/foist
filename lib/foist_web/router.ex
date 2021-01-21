@@ -17,7 +17,8 @@ defmodule FoistWeb.Router do
   scope "/", FoistWeb do
     pipe_through :browser
 
-    live "/", PageLive, :index
+    get "/", WelcomeController, :index
+    live "/page", PageLive, :index
   end
 
   # Other scopes may use custom stacks.

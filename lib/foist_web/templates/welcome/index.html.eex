@@ -1,0 +1,9 @@
+<section class="flex flex-grow items-center justify-center">
+  <figure class="p-2">
+    <span class="text-4xl">foist</span>
+    <span class="mx-2 text-3xl">/fɔɪst/</span>
+    <span class="italic text-3xl">v.</span>
+    <figcaption class="text-2xl">To impose something unwanted (on someone)</figcaption>
+  </figure>
+</section>
+<%= link "Play", to: "#", class: "bg-blue-800 border border-blue-800 my-2 p-2 rounded text-blue-200 text-center w-full" %>
