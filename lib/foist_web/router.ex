@@ -20,6 +20,8 @@ defmodule FoistWeb.Router do
     get "/", WelcomeController, :index
     get "/games", GameController, :index
     live "/page", PageLive, :index
+    get "/players/new", PlayerController, :new
+    post "/players", PlayerController, :create
   end
 
   # Other scopes may use custom stacks.
