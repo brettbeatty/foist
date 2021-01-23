@@ -1,6 +1,6 @@
 <%= form_for @changeset, Routes.player_path(@conn, :create), [as: :player_params, class: "flex flex-col flex-grow"], fn f -> %>
   <%= label f, :name %>
-  <%= text_input f, :name, class: "p-2 text-2xl" %>
+  <%= text_input f, :name, placeholder: "Enter name", class: "bg-blue-200 placeholder-blue-400 p-2 text-2xl" %>
   <%= error_tag f, :name %>
 
   <%= hidden_input f, :redirect %>
