@@ -19,6 +19,8 @@ defmodule FoistWeb.Router do
 
     get "/", WelcomeController, :index
     get "/games", GameController, :index
+    post "/games", GameController, :create
+    live "/games/:join_code", GameLive, :show
     live "/page", PageLive, :index
     get "/players/new", PlayerController, :new
     post "/players", PlayerController, :create

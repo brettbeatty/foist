@@ -1,5 +1,15 @@
 defmodule FoistWeb.GameControllerTest do
   use FoistWeb.ConnCase, async: true
+  alias Foist.GameRegistry
+
+  describe "create" do
+    test "redirects to game", %{conn: conn} do
+      conn = post(conn, Routes.game_path(conn, :create))
+
+      assert "/games/" <> join_code = redirected_to(conn)
+      assert [{_pid, nil}] = Registry.lookup(GameRegistry, join_code)
+    end
+  end
 
   describe "index" do
     test "includes a join game button", %{conn: conn} do
