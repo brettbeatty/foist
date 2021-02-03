@@ -145,6 +145,24 @@ defmodule Foist.GameTest do
     end
   end
 
+  describe "rejoin/2" do
+    test "succeeds if player on roster" do
+      game = Fixtures.game()
+      player = Fixtures.player(?A)
+      assert player in game.roster.players
+
+      assert Game.rejoin(game, player) == :ok
+    end
+
+    test "fails if player not on roster" do
+      game = Fixtures.game()
+      player = Fixtures.player(?H)
+      refute player in game.roster.players
+
+      assert Game.rejoin(game, player) == :error
+    end
+  end
+
   describe "take_card/2" do
     test "puts card in player's hand" do
       game = Fixtures.game()
@@ -184,22 +202,13 @@ defmodule Foist.GameTest do
       assert game.tokens == 0
     end
 
-    test "advances the turn" do
+    test "does not advance the turn" do
       game = Fixtures.game()
       player = Fixtures.player(?A)
       assert player_turn?(game, player)
 
       assert {:ok, game} = Game.take_card(game, player)
-      assert player_turn?(game, Fixtures.player(?C))
-    end
-
-    test "starts turn order over if on last turn" do
-      game = Fixtures.game(turn: 6)
-      player = Fixtures.player(?D)
-      assert player_turn?(game, player)
-
-      assert {:ok, game} = Game.take_card(game, player)
-      assert player_turn?(game, Fixtures.player(?E))
+      assert player_turn?(game, Fixtures.player(?A))
     end
 
     test "fails if not player's turn" do

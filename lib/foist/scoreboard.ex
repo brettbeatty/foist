@@ -57,4 +57,18 @@ defmodule Foist.Scoreboard do
   def play_again(scoreboard = %__MODULE__{play_again: play_again}, player) do
     maybe_finish(%{scoreboard | play_again: MapSet.put(play_again, player)})
   end
+
+  @doc """
+  As `player` rejoin `scoreboard`.
+
+  Fails if `player` not on `scoreboard`'s roster.
+  """
+  @spec rejoin(t(), Player.t()) :: :ok | :error
+  def rejoin(%__MODULE__{roster: roster}, player) do
+    if Roster.member?(roster, player) do
+      :ok
+    else
+      :error
+    end
+  end
 end

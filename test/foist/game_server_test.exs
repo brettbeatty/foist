@@ -58,12 +58,32 @@ defmodule Foist.GameServerTest do
       assert player in get_state(join_code).roster.players
     end
 
-    test "allows player to rejoin" do
+    test "allows player to rejoin game" do
+      join_code = start_server!(Fixtures.game())
+      player = Fixtures.player(?A)
+      assert player in get_state(join_code).roster.players
+
+      assert GameServer.join(join_code, player) == :ok
+      assert_received %GameUpdated{}
+      assert_received %TokensDivvied{}
+    end
+
+    test "allows player to rejoin lobby" do
       join_code = start_server!(Fixtures.lobby(7))
       player = Fixtures.player(?A)
       assert player in get_state(join_code).roster.players
 
       assert GameServer.join(join_code, player) == :ok
+      assert_received %LobbyUpdated{}
+    end
+
+    test "allows player to rejoin scoreboard" do
+      join_code = start_server!(Fixtures.scoreboard(7))
+      player = Fixtures.player(?A)
+      assert player in get_state(join_code).roster.players
+
+      assert GameServer.join(join_code, player) == :ok
+      assert_received %ScoreboardUpdated{}
     end
 
     test "subscribes to join_code topic" do
@@ -100,8 +120,15 @@ defmodule Foist.GameServerTest do
       assert GameServer.join(join_code, player) == :full
     end
 
-    test "fails if game already started" do
+    test "fails if game already started (game)" do
       join_code = start_server!(Fixtures.game())
+      player = Fixtures.player(?H)
+
+      assert GameServer.join(join_code, player) == :already_started
+    end
+
+    test "fails if game already started (scoreboard)" do
+      join_code = start_server!(Fixtures.scoreboard(3))
       player = Fixtures.player(?H)
 
       assert GameServer.join(join_code, player) == :already_started
@@ -395,8 +422,8 @@ defmodule Foist.GameServerTest do
         %{cards: [lone: 21], name: "Player E", turn?: false},
         %{cards: [lone: 34], name: "Player G", turn?: false},
         %{cards: [low: 32, high: 33], name: "Player F", turn?: false},
-        %{cards: [low: 4, high: 5, lone: 27], name: "Player A", turn?: false},
-        %{cards: [lone: 23, low: 25, high: 26, lone: 29], name: "Player C", turn?: true},
+        %{cards: [low: 4, high: 5, lone: 27], name: "Player A", turn?: true},
+        %{cards: [lone: 23, low: 25, high: 26, lone: 29], name: "Player C", turn?: false},
         %{cards: [low: 6, mid: 7, mid: 8, mid: 9, high: 10], name: "Player B", turn?: false},
         %{cards: [lone: 16], name: "Player D", turn?: false}
       ]
@@ -406,7 +433,7 @@ defmodule Foist.GameServerTest do
       assert event.card == 30
       assert event.deck_size == 6
       assert event.hands == expected_hands
-      assert event.turn == Fixtures.player(?C)
+      assert event.turn == Fixtures.player(?A)
     end
 
     test "advances to scoreboard if game finishes" do

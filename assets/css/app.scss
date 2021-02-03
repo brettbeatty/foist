@@ -12,5 +12,5 @@ body > iframe {
 
 // temporary fix to hide phx-connected
 .phx-connected, .phx-disconnected {
-  height: 100%;
+  @apply flex flex-col h-full;
 }

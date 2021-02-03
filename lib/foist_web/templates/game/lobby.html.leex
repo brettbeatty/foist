@@ -1,14 +1,12 @@
 <section class="flex flex-col flex-grow items-center">
   <h3>Join Code</h3>
   <%= link @join_code, to: @url, class: "text-3xl" %>
-  <h3 class="mt-2">Players (7/7)</h3>
-  <span class="text-2xl">Antoine</span>
-  <span class="text-2xl">Barbara</span>
-  <span class="text-2xl">Clark</span>
-  <span class="text-2xl">Dale</span>
-  <span class="text-2xl">Elizabeth</span>
-  <span class="text-2xl">Franklin</span>
-  <span class="text-2xl">Gertrude</span>
+  <h3 class="mt-2">Players (<%= length(@players) %>/7)</h3>
+  <%= for player <- @players do %>
+    <span class="text-2xl"><%= player.name %></span>
+  <% end %>
 </section>
-<button class="bg-blue-800 border border-blue-800 my-2 p-2 rounded text-blue-200 w-full">Start Game</button>
-<button class="bg-blue-200 border border-blue-800 my-2 p-2 rounded text-blue-800 w-full">Leave Game</button>
+<%= if @owner == @player do %>
+  <button class="bg-blue-800 border border-blue-800 my-2 p-2 rounded text-blue-200 w-full" phx-click="start_game">Start Game</button>
+<% end %>
+<button class="bg-blue-200 border border-blue-800 my-2 p-2 rounded text-blue-800 w-full" phx-click="leave_game">Leave Game</button>

@@ -43,10 +43,24 @@ defmodule Foist.GameServer do
   @impl GenServer
   def handle_call(request, from, state)
 
-  def handle_call({:join, player}, _from, lobby = %Lobby{}) do
+  def handle_call({:join, player}, {pid, _ref}, game = %Game{}) do
+    case Game.rejoin(game, player) do
+      :ok ->
+        send(pid, GameUpdated.new(game))
+        send(pid, TokensDivvied.new(game, player))
+        {:reply, :ok, game}
+
+      :error ->
+        {:reply, :already_started, game}
+    end
+  end
+
+  def handle_call({:join, player}, {pid, _ref}, lobby = %Lobby{}) do
     case Lobby.join(lobby, player) do
       {:ok, lobby = %Lobby{roster: %Roster{join_code: join_code}}} ->
-        broadcast!(join_code, LobbyUpdated.new(lobby))
+        event = LobbyUpdated.new(lobby)
+        broadcast!(join_code, event)
+        send(pid, event)
         {:reply, :ok, lobby}
 
       :full ->
@@ -54,8 +68,15 @@ defmodule Foist.GameServer do
     end
   end
 
-  def handle_call({:join, _player}, _from, state) do
-    {:reply, :already_started, state}
+  def handle_call({:join, player}, {pid, _ref}, scoreboard = %Scoreboard{}) do
+    case Scoreboard.rejoin(scoreboard, player) do
+      :ok ->
+        send(pid, ScoreboardUpdated.new(scoreboard))
+        {:reply, :ok, scoreboard}
+
+      :error ->
+        {:reply, :already_started, scoreboard}
+    end
   end
 
   def handle_call({:leave, player}, _from, lobby = %Lobby{}) do
@@ -133,7 +154,7 @@ defmodule Foist.GameServer do
       {:ok, roster = %Roster{join_code: join_code}} ->
         game = Game.new(roster)
         broadcast!(join_code, GameUpdated.new(game))
-        broadcast!(join_code, TokensDivvied.new(game))
+        broadcast!(join_code, TokensDivvied.new(game, player))
         {:reply, :ok, game}
 
       :not_owner ->

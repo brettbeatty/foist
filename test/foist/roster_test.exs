@@ -29,6 +29,24 @@ defmodule Foist.RosterTest do
     end
   end
 
+  describe "member?/2" do
+    test "returns true if player on roster" do
+      roster = Fixtures.roster(2)
+      player = Fixtures.player(?B)
+      assert player in roster.players
+
+      assert Roster.member?(roster, player)
+    end
+
+    test "returns false if player not on roster" do
+      roster = Fixtures.roster(2)
+      player = Fixtures.player(?C)
+      refute player in roster.players
+
+      refute Roster.member?(roster, player)
+    end
+  end
+
   describe "new/0" do
     test "creates an empty roster" do
       assert %Roster{players: []} = Roster.new()

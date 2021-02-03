@@ -1,6 +1,6 @@
 <p class="alert alert-info" role="alert"><%= get_flash(@conn, :info) %></p>
 <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) %></p>
 
-<section class="flex flex-col h-full">
+<section class="flex flex-col flex-grow">
   <%= @inner_content %>
 </section>

@@ -22,6 +22,7 @@ defmodule FoistWeb.ConnCase do
       # Import conveniences for testing with connections
       import Plug.Conn
       import Phoenix.ConnTest
+      import Phoenix.LiveViewTest
       import FoistWeb.ConnCase
 
       alias FoistWeb.Router.Helpers, as: Routes

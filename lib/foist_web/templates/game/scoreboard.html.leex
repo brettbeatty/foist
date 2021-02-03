@@ -5,14 +5,22 @@
     </tr>
   </thead>
   <tbody class="text-2xl">
-    <tr><td>Franklin</td><td class="text-right">-1</td></tr>
-    <tr><td>Barbara ✓</td><td class="text-right">6</td></tr>
-    <tr><td>Dale ✓</td><td class="text-right">26</td></tr>
-    <tr><td>Antoine</td><td class="text-right">27</td></tr>
-    <tr><td class="line-through text-blue-200">Gertrude</td><td class="text-right">33</td></tr>
-    <tr><td class="line-through text-blue-200">Elizabeth</td><td class="text-right">35</td></tr>
-    <tr><td class="line-through text-blue-200">Clark</td><td class="text-right">74</td></tr>
+    <%= for player <- @scores do %>
+      <tr>
+        <%= if player.play_again == :no do %>
+          <td class="line-through text-blue-200">
+        <% else %>
+          <td>
+        <% end %>
+          <%= player.name %>
+          <%= if player.play_again == :yes do %>
+            ✓
+          <% end %>
+        </td>
+        <td class="text-right"><%= player.score %></td>
+      </tr>
+    <% end %>
   </tbody>
 </table>
-<button class="bg-blue-800 border border-blue-800 my-2 p-2 rounded text-blue-200 w-full">Play Again</button>
-<button class="bg-blue-200 border border-blue-800 my-2 p-2 rounded text-blue-800 w-full">Quit</button>
+<button class="bg-blue-800 border border-blue-800 my-2 p-2 rounded text-blue-200 w-full" phx-click="play_again">Play Again</button>
+<button class="bg-blue-200 border border-blue-800 my-2 p-2 rounded text-blue-800 w-full" phx-click="leave_game">Leave Game</button>

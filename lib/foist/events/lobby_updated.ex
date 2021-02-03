@@ -4,15 +4,15 @@ defmodule Foist.Events.LobbyUpdated do
   """
   alias Foist.{Lobby, Player, Roster}
 
-  @type t() :: %__MODULE__{players: [Player.t()]}
+  @type t() :: %__MODULE__{owner: Player.t() | nil, players: [Player.t()]}
 
-  defstruct [:players]
+  defstruct [:owner, :players]
 
   @doc """
   Create a LobbyUpdated event.
   """
   @spec new(Lobby.t()) :: t()
   def new(%Lobby{roster: %Roster{players: players}}) do
-    %__MODULE__{players: players}
+    %__MODULE__{owner: List.first(players), players: players}
   end
 end

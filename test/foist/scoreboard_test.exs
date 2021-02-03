@@ -109,4 +109,22 @@ defmodule Foist.ScoreboardTest do
       assert roster.players == [player_a, player_b, player_c]
     end
   end
+
+  describe "rejoin/2" do
+    test "succeeds if player on roster" do
+      game = Fixtures.scoreboard(2)
+      player = Fixtures.player(?A)
+      assert player in game.roster.players
+
+      assert Scoreboard.rejoin(game, player) == :ok
+    end
+
+    test "fails if player not on roster" do
+      game = Fixtures.scoreboard(2)
+      player = Fixtures.player(?H)
+      refute player in game.roster.players
+
+      assert Scoreboard.rejoin(game, player) == :error
+    end
+  end
 end

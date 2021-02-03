@@ -4,16 +4,16 @@ defmodule Foist.Events.TokensDivvied do
   """
   alias Foist.{Game, Hand, Player}
 
-  @type t() :: %__MODULE__{tokens: 7 | 9 | 11}
+  @type t() :: %__MODULE__{tokens: non_neg_integer()}
 
   defstruct [:tokens]
 
   @doc """
   Create a TokensDivvied event.
   """
-  @spec new(Game.t()) :: t()
-  def new(%Game{hands: hands}) do
-    [{%Player{}, %Hand{tokens: tokens}}] = Enum.take(hands, 1)
+  @spec new(Game.t(), Player.t()) :: t()
+  def new(%Game{hands: hands}, player) do
+    %{^player => %Hand{tokens: tokens}} = hands
 
     %__MODULE__{tokens: tokens}
   end

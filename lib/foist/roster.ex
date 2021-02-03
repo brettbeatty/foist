@@ -29,6 +29,14 @@ defmodule Foist.Roster do
   end
 
   @doc """
+  Checks if `player` is a member of `roster`.
+  """
+  @spec member?(t(), Player.t()) :: boolean()
+  def member?(%__MODULE__{players: players}, player) do
+    player in players
+  end
+
+  @doc """
   Create a roster.
   """
   @spec new() :: t()

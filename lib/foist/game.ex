@@ -105,6 +105,20 @@ defmodule Foist.Game do
   end
 
   @doc """
+  As `player` rejoin `game`.
+
+  Fails if `player` not on `game`'s roster.
+  """
+  @spec rejoin(t(), Player.t()) :: :ok | :error
+  def rejoin(%__MODULE__{roster: roster}, player) do
+    if Roster.member?(roster, player) do
+      :ok
+    else
+      :error
+    end
+  end
+
+  @doc """
   As `player` take the card.
 
   Fails if not `player`'s turn. Game ends when last card taken.
@@ -119,12 +133,7 @@ defmodule Foist.Game do
 
       case deck do
         [card | deck] ->
-          game =
-            %{game | card: card, deck: deck, tokens: 0}
-            |> put_hand(player, hand)
-            |> advance_turn()
-
-          {:ok, game}
+          {:ok, put_hand(%{game | card: card, deck: deck, tokens: 0}, player, hand)}
 
         [] ->
           {:done, %{hands | player => hand}}
