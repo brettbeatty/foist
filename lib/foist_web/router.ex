@@ -1,5 +1,6 @@
 defmodule FoistWeb.Router do
   use FoistWeb, :router
+  alias FoistWeb.PlayerRequired
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -18,14 +19,19 @@ defmodule FoistWeb.Router do
     pipe_through :browser
 
     get "/", WelcomeController, :index
-    get "/games", GameController, :index
-    post "/games", GameController, :create
-    get "/games/join", GameController, :join_code
-    post "/games/join", GameController, :join
-    live "/games/:join_code", GameLive, :show
     live "/page", PageLive, :index
     get "/players/new", PlayerController, :new
     post "/players", PlayerController, :create
+
+    scope "/", nil do
+      pipe_through PlayerRequired
+
+      get "/games", GameController, :index
+      post "/games", GameController, :create
+      get "/games/join", GameController, :join_code
+      post "/games/join", GameController, :join
+      live "/games/:join_code", GameLive, :show
+    end
   end
 
   # Other scopes may use custom stacks.
