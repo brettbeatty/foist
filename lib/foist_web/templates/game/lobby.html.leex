@@ -6,7 +6,7 @@
     <span class="text-2xl"><%= player.name %></span>
   <% end %>
 </section>
-<%= if @owner == @player do %>
+<%= if @owner == @player and length(@players) >= 3 do %>
   <button class="bg-blue-800 border border-blue-800 my-2 p-2 rounded text-blue-200 w-full" phx-click="start_game">Start Game</button>
 <% end %>
 <button class="bg-blue-200 border border-blue-800 my-2 p-2 rounded text-blue-800 w-full" phx-click="leave_game">Leave Game</button>
