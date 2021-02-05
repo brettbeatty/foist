@@ -42,9 +42,17 @@
   </ul>
 </section>
 <span class="text-center">My Tokens: <%= @tokens %></span>
-<%= if @turn == @player do %>
-  <%= if @tokens > 0 do %>
-    <button class="bg-blue-800 border border-blue-800 my-2 p-2 rounded text-blue-200 w-full" phx-click="place_token">Place Token on Card</button>
-  <% end %>
-  <button class="bg-blue-200 border border-blue-800 my-2 p-2 rounded text-blue-800 w-full" phx-click="take_card">Take Card</button>
+<%= if @turn == @player and @tokens > 0 do %>
+  <button class="bg-blue-800 border border-blue-800 my-2 p-2 rounded text-blue-200 w-full" phx-click="place_token">
+<% else %>
+  <button class="border invisible my-2 p-2 w-full">
 <% end %>
+  Place Token on Card
+</button>
+<%= if @turn == @player do %>
+  <button class="bg-blue-200 border border-blue-800 my-2 p-2 rounded text-blue-800 w-full" phx-click="take_card">
+<% else %>
+  <button class="border invisible my-2 p-2 w-full">
+<% end %>
+ Take Card
+</button>
