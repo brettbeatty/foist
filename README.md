@@ -1,5 +1,11 @@
 # Foist
 
+Foist is a clone of the card game "No Thanks!". It is my side project for learning Phoenix LiveView.
+
+Foist is available to play at https://foist.brettbeatty.com.
+
+## Running Locally
+
 To start your Phoenix server:
 
   * Install dependencies with `mix deps.get`
