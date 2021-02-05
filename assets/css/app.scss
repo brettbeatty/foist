@@ -5,12 +5,17 @@
 @tailwind components;
 @tailwind utilities;
 
-// temporary fix to hide live reload iframe
-body > iframe {
-  display: none;
+// temporary fix to hide phx-connected
+.phx-connected, .phx-disconnected, .phx-error {
+  @apply flex flex-col w-full;
 }
 
-// temporary fix to hide phx-connected
-.phx-connected, .phx-disconnected {
-  @apply flex flex-col w-full;
+body {
+  height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
+}
+
+// hide live reload frame
+iframe[hidden] {
+  display: none;
 }

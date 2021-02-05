@@ -9,7 +9,7 @@
     <link phx-track-static rel="stylesheet" href="<%= Routes.static_path(@conn, "/css/app.css") %>"/>
     <script defer phx-track-static type="text/javascript" src="<%= Routes.static_path(@conn, "/js/app.js") %>"></script>
   </head>
-  <body class="bg-blue-400 flex flex-col h-screen items-center text-blue-800">
+  <body class="bg-blue-400 flex flex-col items-center text-blue-800">
     <header class="mt-1 text-center text-4xl">Foist</header>
     <main class="flex flex-grow items-stretch p-2 w-full max-w-screen-sm">
       <%= @inner_content %>
