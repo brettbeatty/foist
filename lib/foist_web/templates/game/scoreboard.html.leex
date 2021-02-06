@@ -23,5 +23,7 @@
   </tbody>
 </table>
 <div class="flex-grow"></div>
-<button class="bg-blue-800 border border-blue-800 my-2 p-2 rounded text-blue-200 w-full" phx-click="play_again">Play Again</button>
+<%= if @player not in @playing_again do %>
+  <button class="bg-blue-800 border border-blue-800 my-2 p-2 rounded text-blue-200 w-full" phx-click="play_again">Play Again</button>
+<% end %>
 <button class="bg-blue-200 border border-blue-800 my-2 p-2 rounded text-blue-800 w-full" phx-click="leave_game">Leave Game</button>

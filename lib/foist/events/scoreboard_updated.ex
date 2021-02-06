@@ -5,9 +5,9 @@ defmodule Foist.Events.ScoreboardUpdated do
   alias Foist.{Player, Roster, Scoreboard}
 
   @type score() :: %{name: String.t(), play_again: :yes | :no | :maybe, score: integer()}
-  @type t() :: %__MODULE__{scores: [score()]}
+  @type t() :: %__MODULE__{playing_again: MapSet.t(Player.t()), scores: [score()]}
 
-  defstruct [:scores]
+  defstruct [:playing_again, :scores]
 
   @doc """
   Create a ScoreboardCreated event.
@@ -31,6 +31,6 @@ defmodule Foist.Events.ScoreboardUpdated do
         %{name: name, play_again: playing_again, score: score}
       end
 
-    %__MODULE__{scores: scores}
+    %__MODULE__{playing_again: play_again, scores: scores}
   end
 end

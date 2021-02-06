@@ -91,8 +91,8 @@ defmodule FoistWeb.GameLive do
     {:noreply, assign(socket, assigns)}
   end
 
-  def handle_info(%ScoreboardUpdated{scores: scores}, socket) do
-    {:noreply, assign(socket, scores: scores, screen: :scoreboard)}
+  def handle_info(%ScoreboardUpdated{playing_again: playing_again, scores: scores}, socket) do
+    {:noreply, assign(socket, playing_again: playing_again, scores: scores, screen: :scoreboard)}
   end
 
   def handle_info(%TokensDivvied{tokens: tokens}, socket) do
@@ -130,6 +130,7 @@ defmodule FoistWeb.GameLive do
       page_title: "Game #{join_code}",
       player: player,
       players: [],
+      playing_again: [],
       screen: :lobby,
       scores: [],
       tokens: 0,
