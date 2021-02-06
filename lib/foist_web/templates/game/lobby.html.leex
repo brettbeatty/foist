@@ -1,6 +1,7 @@
 <section class="flex flex-col flex-grow items-center">
   <h3>Join Code</h3>
   <%= link @join_code, to: @url, class: "text-3xl" %>
+  <p class="text-center text-xs w-6/12">Give your friends this join code, or it's also a link you can share directly to the game.</p>
   <h3 class="mt-2">Players (<%= length(@players) %>/7)</h3>
   <%= for player <- @players do %>
     <span class="text-2xl"><%= player.name %></span>
