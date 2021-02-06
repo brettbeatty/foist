@@ -1,0 +1,95 @@
+<h2 class="mt-2 text-2xl">You Don't Want Points!</h2>
+<p>Cards add points to your score. Tokens take points off your score. You want to maximize tokens
+received while minimizing points taken as cards.
+<h2 class="mt-2 text-2xl">Pay Tokens to Avoid Cards</h2>
+<p>At the start of a game, a deck of cards numbered 3 to 35 will be shuffled and 9 cards will be
+removed at random. The top card will be shown.<p>
+<figure class="cursor-default p-4">
+  <section class="flex my-2">
+    <ul class="flex items-center w-full">
+      <li class="flex flex-col w-1/4">
+        <label class="bg-blue-800 border border-blue-800 rounded-tl text-blue-200 text-center">Deck Size</label>
+        <span class="border border-blue-800 rounded-bl text-center text-2xl">23</span>
+      </li>
+      <li class="flex flex-col w-1/2">
+        <label class="bg-blue-800 border border-blue-800 flex flex-col rounded-t text-blue-200 text-center">Card</label>
+        <span class="border border-blue-800 rounded-b text-center text-8xl">17</span>
+      </li>
+      <li class="flex flex-col w-1/4">
+        <label class="bg-blue-800 border border-blue-800 flex flex-col rounded-tr text-blue-200 text-center">Tokens</label>
+        <span class="border border-blue-800 rounded-br text-center text-2xl">0</span>
+      </li>
+    </ul>
+  </section>
+</figure>
+<p>Each play will also be dealt a number of tokens depending on how many people are playing.<p>
+<table class="m-4 self-center text-center text-xl">
+  <thead>
+    <tr>
+      <th class="p-1">Players</th>
+      <th class="p-1">Tokens</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>3-5</td>
+      <td>11</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>9</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>7</td>
+    </tr>
+  </tbody>
+</table>
+<p>On your turn you'll choose to either take a card or place a token on it. You cannot choose to
+place a token if you have no tokens remaining. If you run out of tokens you may end up with a card
+you don't want.</p>
+<figure class="cursor-default p-4">
+  <p class="text-center">My Tokens: 11</span>
+  <button class="bg-blue-800 border border-blue-800 cursor-default my-2 p-2 rounded text-blue-200 w-full" disabled>
+    Place Token on Card
+  </button>
+  <button class="bg-blue-200 border border-blue-800 cursor-default my-2 p-2 rounded text-blue-800 w-full" disabled>
+   Take Card
+  </button>
+</figure>
+<p>If you choose to take the card, you will also receive any tokens on it. The next card will be
+made visible, and you'll have the option to take that card or place a token on it.</p>
+<p class="mt-1">Your turn only ends when you place a token on a card. The game finishes when the last card is taken.</p>
+<h2 class="mt-2 text-2xl">Only the Lowest Card in a Series Counts</h2>
+<p>If you have a series of consecutive cards, only the lowest will count as points towards your
+score.  If, for example, you had the cards 11, 12, 15, 16, 17, and 20, only the 11, 15, and 20 would
+count towards your score.</p>
+<figure class="cursor-default flex justify-center p-4">
+  <ol class="flex flex-wrap text-xl">
+    <li class="bg-blue-800 border border-blue-800 ml-0.5 px-0.5 rounded-l text-blue-200">11</li>
+    <li class="border border-blue-800 mr-0.5 px-0.5 rounded-r">12</li>
+    <li class="bg-blue-800 border border-blue-800 ml-0.5 px-0.5 rounded-l text-blue-200">15</li>
+    <li class="border border-blue-800 px-0.5">16</li>
+    <li class="border border-blue-800 mr-0.5 px-0.5 rounded-r">17</li>
+    <li class="bg-blue-800 border border-blue-800 mx-0.5 px-0.5 rounded text-blue-200">20</li>
+  </ol>
+</figure>
+<p>This means a card's true cost depends on what you have in your hand. Players with cards adjacent
+to the current card can choose to take the card before other players since they incur a lower cost.
+Or they can gamble and keep sending the card around; the more tokens the better. However, someone
+else may decide the card is now worth taking, or they may run out of tokens and not have a choice.
+</p>
+<p class="mt-1">Typically players that go for low cards don't have many tokens; they can end up
+taking cards they don't want. Players that take high cards with plenty of tokens usually have tokens
+aplenty; however, they may end up with a lot of points if they can't connect their cards in a
+continuous series. Remember: 9 cards were removed at the beginning of the game, so you can't be sure
+the card you're looking for will be available.</p>
+<h2 class="mt-2 text-2xl">Scoreboard</h2>
+<p>After the last card is taken, players will be taken immediately to the scoreboard, with the
+scores listed is ascending order. The player with the lowest score wins!</p>
+<p class="mt-1">Players may choose to play again or leave. Players who opt to play again will receive
+checkmarks next to their names. Players who leave will have their names struck through and faded on
+the scoreboard. Once everyone has made their choice, the remaining players will be returned to the
+lobby where they can await new players if desired and start a new game.</p>
+<section class="flex-grow m-2"></section>
+<%= link "Play", to: Routes.game_path(@conn, :index), class: "bg-blue-800 border border-blue-800 my-2 p-2 rounded text-blue-200 text-center w-full" %>

@@ -7,3 +7,4 @@
   </figure>
 </section>
 <%= link "Play", to: Routes.game_path(@conn, :index), class: "bg-blue-800 border border-blue-800 my-2 p-2 rounded text-blue-200 text-center w-full" %>
+<%= link "How to Play", to: Routes.welcome_path(@conn, :how_to_play), class: "bg-blue-200 border border-blue-800 my-2 p-2 rounded text-blue-800 text-center w-full" %>

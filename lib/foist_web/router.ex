@@ -19,6 +19,7 @@ defmodule FoistWeb.Router do
     pipe_through :browser
 
     get "/", WelcomeController, :index
+    get "/how_to_play", WelcomeController, :how_to_play
     live "/page", PageLive, :index
     get "/players/new", PlayerController, :new
     post "/players", PlayerController, :create
