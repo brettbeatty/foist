@@ -1,6 +1,6 @@
 defmodule FoistWeb.PlayerControllerTest do
   use FoistWeb.ConnCase, async: true
-  alias Foist.Player
+  alias Foist.{Fixtures, Player}
 
   describe "create" do
     test "saves player to session", %{conn: conn} do
@@ -47,6 +47,36 @@ defmodule FoistWeb.PlayerControllerTest do
       conn = get(conn, Routes.player_path(conn, :new), redirect: "/games/ABCD")
 
       assert html_response(conn, 200) =~ "/games/ABCD"
+    end
+
+    test "name input is empty if initial", %{conn: conn} do
+      conn = get(conn, Routes.player_path(conn, :new))
+
+      assert html_response(conn, 200) =~ ~S(value="")
+    end
+
+    test "name input is populated if already provided", %{conn: conn} do
+      conn =
+        conn
+        |> init_test_session(player: Fixtures.player(?A))
+        |> get(Routes.player_path(conn, :new))
+
+      assert html_response(conn, 200) =~ ~S(value="Player A")
+    end
+
+    test "cancel button returns to home screen by default", %{conn: conn} do
+      conn = get(conn, Routes.player_path(conn, :new))
+
+      assert html_response(conn, 200) =~ Routes.welcome_path(conn, :index)
+    end
+
+    test "cancel button returns to game screen if player in session", %{conn: conn} do
+      conn =
+        conn
+        |> init_test_session(player: Fixtures.player(?A))
+        |> get(Routes.player_path(conn, :new))
+
+      assert html_response(conn, 200) =~ Routes.game_path(conn, :index)
     end
   end
 end

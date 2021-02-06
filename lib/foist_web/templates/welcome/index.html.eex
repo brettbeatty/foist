@@ -6,4 +6,4 @@
     <figcaption class="text-2xl">To impose something unwanted (on someone)</figcaption>
   </figure>
 </section>
-<%= link "Play", to: Routes.player_path(@conn, :new), class: "bg-blue-800 border border-blue-800 my-2 p-2 rounded text-blue-200 text-center w-full" %>
+<%= link "Play", to: Routes.game_path(@conn, :index), class: "bg-blue-800 border border-blue-800 my-2 p-2 rounded text-blue-200 text-center w-full" %>

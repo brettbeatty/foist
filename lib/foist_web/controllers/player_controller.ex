@@ -15,7 +15,23 @@ defmodule FoistWeb.PlayerController do
         |> redirect(to: redirect)
 
       {:error, changeset} ->
-        render(conn, "new.html", page_title: "New Player", changeset: changeset)
+        {name, cancel} =
+          case get_session(conn, "player") do
+            %Player{name: name} ->
+              {name, Routes.game_path(conn, :index)}
+
+            nil ->
+              {"", Routes.welcome_path(conn, :index)}
+          end
+
+        assigns = [
+          cancel: cancel,
+          changeset: changeset,
+          name: name,
+          page_title: "New Player"
+        ]
+
+        render(conn, "new.html", assigns)
     end
   end
 
@@ -25,7 +41,23 @@ defmodule FoistWeb.PlayerController do
       |> Map.take(["redirect"])
       |> changeset()
 
-    render(conn, "new.html", page_title: "New Player", changeset: changeset)
+    {name, cancel} =
+      case get_session(conn, "player") do
+        %Player{name: name} ->
+          {name, Routes.game_path(conn, :index)}
+
+        nil ->
+          {"", Routes.welcome_path(conn, :index)}
+      end
+
+    assigns = [
+      cancel: cancel,
+      changeset: changeset,
+      name: name,
+      page_title: "New Player"
+    ]
+
+    render(conn, "new.html", assigns)
   end
 
   defp changeset(attrs) do

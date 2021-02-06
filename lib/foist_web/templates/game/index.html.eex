@@ -1,3 +1,7 @@
-<section class="flex-grow"></section>
+<section class="flex flex-col flex-grow items-center">
+  <h3>Playing As</h3>
+  <span class="text-3xl"><%= @player.name %></span>
+</section>
 <%= link "Join Game", to: Routes.game_path(@conn, :join_code), class: "bg-blue-800 border border-blue-800 my-2 p-2 rounded text-blue-200 text-center w-full" %>
 <%= link "Create Game", to: Routes.game_path(@conn, :create), method: "post", class: "bg-blue-200 border border-blue-800 my-2 p-2 rounded text-blue-800 text-center w-full" %>
+<%= link "Change Name", to: Routes.player_path(@conn, :new, redirect: @conn.request_path), class: "bg-blue-200 border border-blue-800 my-2 p-2 rounded text-blue-800 text-center w-full" %>

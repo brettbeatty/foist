@@ -14,7 +14,9 @@ defmodule FoistWeb.GameController do
   end
 
   def index(conn, _params) do
-    render(conn, "index.html", page_title: "Play")
+    player = get_session(conn, "player")
+
+    render(conn, "index.html", page_title: "Play", player: player)
   end
 
   def join_code(conn, _params) do
