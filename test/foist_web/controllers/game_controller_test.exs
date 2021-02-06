@@ -46,13 +46,13 @@ defmodule FoistWeb.GameControllerTest do
       assert html_response(conn, 200) =~ ">Create Game</a>"
     end
 
-    test "includes a change name button", %{conn: conn} do
+    test "includes a link to change name", %{conn: conn} do
       conn =
         conn
         |> init_test_session(player: Fixtures.player(?A))
         |> get(Routes.game_path(conn, :index))
 
-      assert html_response(conn, 200) =~ ">Change Name</a>"
+      assert html_response(conn, 200) =~ Routes.player_path(conn, :new)
     end
 
     test "includes a button to learn how to play", %{conn: conn} do
