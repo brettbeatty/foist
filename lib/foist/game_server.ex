@@ -9,6 +9,8 @@ defmodule Foist.GameServer do
   @type join_code() :: Roster.join_code()
   @type state() :: Game.t() | Lobby.t() | Scoreboard.t()
 
+  @timeout :timer.minutes(10)
+
   @spec broadcast!(join_code(), any()) :: :ok
   defp broadcast!(join_code, message) do
     Phoenix.PubSub.broadcast!(Foist.PubSub, join_code, message)
@@ -48,10 +50,10 @@ defmodule Foist.GameServer do
       :ok ->
         send(pid, GameUpdated.new(game))
         send(pid, TokensDivvied.new(game, player))
-        {:reply, :ok, game}
+        {:reply, :ok, game, @timeout}
 
       :error ->
-        {:reply, :already_started, game}
+        {:reply, :already_started, game, @timeout}
     end
   end
 
@@ -61,10 +63,10 @@ defmodule Foist.GameServer do
         event = LobbyUpdated.new(lobby)
         broadcast!(join_code, event)
         send(pid, event)
-        {:reply, :ok, lobby}
+        {:reply, :ok, lobby, @timeout}
 
       :full ->
-        {:reply, :full, lobby}
+        {:reply, :full, lobby, @timeout}
     end
   end
 
@@ -72,10 +74,10 @@ defmodule Foist.GameServer do
     case Scoreboard.rejoin(scoreboard, player) do
       :ok ->
         send(pid, ScoreboardUpdated.new(scoreboard))
-        {:reply, :ok, scoreboard}
+        {:reply, :ok, scoreboard, @timeout}
 
       :error ->
-        {:reply, :already_started, scoreboard}
+        {:reply, :already_started, scoreboard, @timeout}
     end
   end
 
@@ -83,7 +85,7 @@ defmodule Foist.GameServer do
     case Lobby.leave(lobby, player) do
       {:ok, lobby = %Lobby{roster: %Roster{join_code: join_code}}} ->
         broadcast!(join_code, LobbyUpdated.new(lobby))
-        {:reply, :ok, lobby}
+        {:reply, :ok, lobby, @timeout}
 
       :empty ->
         {:stop, :normal, :ok, lobby}
@@ -96,12 +98,12 @@ defmodule Foist.GameServer do
     case Scoreboard.leave(scoreboard, player) do
       {:ok, scoreboard} ->
         broadcast!(join_code, ScoreboardUpdated.new(scoreboard))
-        {:reply, :ok, scoreboard}
+        {:reply, :ok, scoreboard, @timeout}
 
       {:done, roster} ->
         lobby = Lobby.new(roster)
         broadcast!(join_code, LobbyUpdated.new(lobby))
-        {:reply, :ok, lobby}
+        {:reply, :ok, lobby, @timeout}
 
       :empty ->
         {:stop, :normal, :ok, scoreboard}
@@ -109,25 +111,25 @@ defmodule Foist.GameServer do
   end
 
   def handle_call({:leave, _player}, _from, state) do
-    {:reply, :already_started, state}
+    {:reply, :already_started, state, @timeout}
   end
 
   def handle_call({:place_token, player}, _from, game = %Game{}) do
     case Game.place_token(game, player) do
       {:ok, game = %Game{roster: %Roster{join_code: join_code}}} ->
         broadcast!(join_code, GameUpdated.new(game))
-        {:reply, {:ok, game.hands[player].tokens}, game}
+        {:reply, {:ok, game.hands[player].tokens}, game, @timeout}
 
       :not_turn ->
-        {:reply, :not_turn, game}
+        {:reply, :not_turn, game, @timeout}
 
       :no_tokens ->
-        {:reply, :no_tokens, game}
+        {:reply, :no_tokens, game, @timeout}
     end
   end
 
   def handle_call({:place_token, _player}, _from, state) do
-    {:reply, :not_turn, state}
+    {:reply, :not_turn, state, @timeout}
   end
 
   def handle_call({:play_again, player}, _from, scoreboard = %Scoreboard{}) do
@@ -136,17 +138,17 @@ defmodule Foist.GameServer do
     case Scoreboard.play_again(scoreboard, player) do
       {:ok, scoreboard} ->
         broadcast!(join_code, ScoreboardUpdated.new(scoreboard))
-        {:reply, :ok, scoreboard}
+        {:reply, :ok, scoreboard, @timeout}
 
       {:done, roster} ->
         lobby = Lobby.new(roster)
         broadcast!(join_code, LobbyUpdated.new(lobby))
-        {:reply, :ok, lobby}
+        {:reply, :ok, lobby, @timeout}
     end
   end
 
   def handle_call({:play_again, _player}, _from, state) do
-    {:reply, :not_scoreboard, state}
+    {:reply, :not_scoreboard, state, @timeout}
   end
 
   def handle_call({:start_game, player}, _from, lobby = %Lobby{}) do
@@ -155,18 +157,18 @@ defmodule Foist.GameServer do
         game = Game.new(roster)
         broadcast!(join_code, GameUpdated.new(game))
         broadcast!(join_code, TokensDivvied.new(game, player))
-        {:reply, :ok, game}
+        {:reply, :ok, game, @timeout}
 
       :not_owner ->
-        {:reply, :not_owner, lobby}
+        {:reply, :not_owner, lobby, @timeout}
 
       :not_enough_players ->
-        {:reply, :not_enough_players, lobby}
+        {:reply, :not_enough_players, lobby, @timeout}
     end
   end
 
   def handle_call({:start_game, _player}, _from, state) do
-    {:reply, :already_started, state}
+    {:reply, :already_started, state, @timeout}
   end
 
   def handle_call({:take_card, player}, _from, game = %Game{roster: roster}) do
@@ -175,20 +177,27 @@ defmodule Foist.GameServer do
     case Game.take_card(game, player) do
       {:ok, game} ->
         broadcast!(join_code, GameUpdated.new(game))
-        {:reply, {:ok, game.hands[player].tokens}, game}
+        {:reply, {:ok, game.hands[player].tokens}, game, @timeout}
 
       {:done, hands} ->
         scoreboard = Scoreboard.new(roster, hands)
         broadcast!(join_code, ScoreboardUpdated.new(scoreboard))
-        {:reply, {:ok, hands[player].tokens}, scoreboard}
+        {:reply, {:ok, hands[player].tokens}, scoreboard, @timeout}
 
       :not_turn ->
-        {:reply, :not_turn, game}
+        {:reply, :not_turn, game, @timeout}
     end
   end
 
   def handle_call({:take_card, _player}, _from, state) do
-    {:reply, :not_turn, state}
+    {:reply, :not_turn, state, @timeout}
+  end
+
+  @impl GenServer
+  def handle_info(message, state)
+
+  def handle_info(:timeout, state) do
+    {:stop, :normal, state}
   end
 
   @impl GenServer
@@ -197,7 +206,7 @@ defmodule Foist.GameServer do
 
     case Registry.register(GameRegistry, join_code, nil) do
       {:ok, _pid} ->
-        {:ok, Lobby.new(roster)}
+        {:ok, Lobby.new(roster), @timeout}
 
       {:error, {:already_started, _pid}} ->
         init(opts)
