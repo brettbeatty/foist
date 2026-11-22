@@ -1,0 +1,6 @@
+.git
+_build
+deps
+assets/node_modules
+priv/static
+erl_crash.dump
